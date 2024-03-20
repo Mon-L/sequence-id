@@ -1,14 +1,30 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.zcn.sequence.id;
 
 import com.zcn.sequence.id.model.IdSlot;
-
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.sql.DataSource;
 
 /**
  * 用于 Sequence ids 持久化和分配 ids。
@@ -19,11 +35,13 @@ public class IdSlotDao {
 
     private final DataSource dataSource;
 
-    private static final String GET_ALL = "select id, type, max, step, max_step, step_duration, update_time from sequence_id";
+    private static final String GET_ALL =
+            "select id, type, max, step, max_step, step_duration, update_time from sequence_id";
 
     private static final String UPDATE_MAX = "update sequence_id set max = max + ? where type = ?";
 
-    private static final String GET_ONE = "select id, type, max, step, update_time, max_step, step_duration from sequence_id where type = ?";
+    private static final String GET_ONE =
+            "select id, type, max, step, update_time, max_step, step_duration from sequence_id where type = ?";
 
     public IdSlotDao(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -56,17 +74,17 @@ public class IdSlotDao {
             if (connection.getAutoCommit()) {
                 autoCommit = true;
 
-                //取消自动提交
+                // 取消自动提交
                 connection.setAutoCommit(false);
             }
 
-            //update max
+            // update max
             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_MAX);
             preparedStatement.setInt(1, step);
             preparedStatement.setInt(2, type);
             int count = preparedStatement.executeUpdate();
             if (count > 0) {
-                //query
+                // query
                 preparedStatement = connection.prepareStatement(GET_ONE);
                 preparedStatement.setInt(1, type);
                 ResultSet resultSet = preparedStatement.executeQuery();

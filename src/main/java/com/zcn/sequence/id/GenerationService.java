@@ -1,16 +1,32 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.zcn.sequence.id;
 
 import com.zcn.sequence.id.model.IdBuffer;
 import com.zcn.sequence.id.model.IdSlot;
 import com.zcn.sequence.id.model.Segment;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zicung
@@ -19,15 +35,15 @@ public class GenerationService {
 
     private static final Logger LOG = LoggerFactory.getLogger(GenerationService.class);
 
-    private final ExecutorService fillSegmentExecutor = new ThreadPoolExecutor(5, Integer.MAX_VALUE, 60L,
-            TimeUnit.SECONDS, new SynchronousQueue<>(), new ThreadFactory() {
-        private final AtomicInteger i = new AtomicInteger(0);
+    private final ExecutorService fillSegmentExecutor = new ThreadPoolExecutor(
+            5, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new ThreadFactory() {
+                private final AtomicInteger i = new AtomicInteger(0);
 
-        @Override
-        public Thread newThread(Runnable r) {
-            return new Thread(r, "Update-SequenceId-segment-thread-" + i.incrementAndGet());
-        }
-    });
+                @Override
+                public Thread newThread(Runnable r) {
+                    return new Thread(r, "Update-SequenceId-segment-thread-" + i.incrementAndGet());
+                }
+            });
 
     private final IdSlotDao idSlotDao;
     private volatile boolean inited = false;
@@ -120,7 +136,8 @@ public class GenerationService {
         int step = idBuffer.getNextStep();
         IdSlot idSlot = idSlotDao.updateIdAllocAndGet(type, step);
         if (idSlot == null) {
-            throw new SequenceIdException("No SequenceId Type, Please check table sequence_id. SequenceId Type: " + type);
+            throw new SequenceIdException(
+                    "No SequenceId Type, Please check table sequence_id. SequenceId Type: " + type);
         }
         segment.refresh(idSlot.getMax(), step);
     }
