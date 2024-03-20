@@ -46,10 +46,6 @@ public class Segment {
     }
 
     public Long next() {
-        if (value.get() >= max) {
-            return null;
-        }
-
         long val = value.incrementAndGet();
         return val <= max ? val : null;
     }

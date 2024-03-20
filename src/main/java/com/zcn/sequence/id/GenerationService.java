@@ -41,12 +41,14 @@ public class GenerationService {
 
                 @Override
                 public Thread newThread(Runnable r) {
-                    return new Thread(r, "Update-SequenceId-segment-thread-" + i.incrementAndGet());
+                    return new Thread(r, "Fill-SequenceId-segment-thread-" + i.incrementAndGet());
                 }
             });
 
     private final IdSlotDao idSlotDao;
+
     private volatile boolean inited = false;
+
     private final Map<Integer, IdBuffer> idBuffers = new ConcurrentHashMap<>();
 
     public GenerationService(DataSource dataSource) {

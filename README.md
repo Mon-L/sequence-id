@@ -23,7 +23,7 @@ CREATE TABLE `sequence_id` (
 ``` xml
 <dependency>
     <groupId>com.zcn</groupId>
-    <artifactId>SequenceId</artifactId>
+    <artifactId>sequence-id</artifactId>
     <version>1.0</version>
 </dependency>
 ```
