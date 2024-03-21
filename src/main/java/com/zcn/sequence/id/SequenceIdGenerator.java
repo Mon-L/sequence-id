@@ -20,13 +20,14 @@ package com.zcn.sequence.id;
 import com.zcn.sequence.id.model.IdBuffer;
 import com.zcn.sequence.id.model.IdSlot;
 import com.zcn.sequence.id.model.Segment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.sql.DataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author zicung
@@ -35,19 +36,11 @@ public class SequenceIdGenerator {
 
     private static final Logger LOG = LoggerFactory.getLogger(SequenceIdGenerator.class);
 
-    private final ExecutorService fillSegmentExecutor = new ThreadPoolExecutor(
-            5, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new ThreadFactory() {
-                private final AtomicInteger i = new AtomicInteger(0);
-
-                @Override
-                public Thread newThread(Runnable r) {
-                    return new Thread(r, "Fill-SequenceId-segment-thread-" + i.incrementAndGet());
-                }
-            });
-
     private final IdSlotDao idSlotDao;
 
     private volatile boolean inited = false;
+
+    private ExecutorService fillSegmentExecutor;
 
     private final Map<Integer, IdBuffer> idBuffers = new ConcurrentHashMap<>();
 
@@ -56,13 +49,18 @@ public class SequenceIdGenerator {
     }
 
     public void init() {
-        if (inited) {
-            return;
-        }
-
         updateIdBuffers();
-        inited = true;
         startUpdateIdBufferInterval();
+        fillSegmentExecutor = new ThreadPoolExecutor(
+                5, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new ThreadFactory() {
+            private final AtomicInteger i = new AtomicInteger(0);
+
+            @Override
+            public Thread newThread(Runnable r) {
+                return new Thread(r, "Fill-SequenceId-segment-thread-" + i.incrementAndGet());
+            }
+        });
+        inited = true;
     }
 
     private void startUpdateIdBufferInterval() {
@@ -230,6 +228,8 @@ public class SequenceIdGenerator {
     }
 
     public void destroy() {
-        fillSegmentExecutor.shutdown();
+        if (inited) {
+            fillSegmentExecutor.shutdown();
+        }
     }
 }
