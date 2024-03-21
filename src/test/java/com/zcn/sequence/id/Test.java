@@ -18,6 +18,7 @@
 package com.zcn.sequence.id;
 
 import com.alibaba.druid.pool.DruidDataSource;
+
 import java.util.concurrent.CountDownLatch;
 
 /**
